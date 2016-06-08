@@ -9,9 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.beka.simpletodoapp.database.DBContract;
+import com.beka.simpletodoapp.database.DataBaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +85,57 @@ public class MainActivity extends AppCompatActivity {
                     DBContract.TodoEntry.COL_TITLE},
                 null, null, null, null, null);
         //считываем все заметки из таблицы в список
-        
+        while (cursor.moveToNext()) {
+            int idx = cursor.getColumnIndex((DBContract.TodoEntry.COL_TITLE));
+            itemsList.add(cursor.getString(idx));
+        }
+        //заполняем адаптер списком заметок из БД
+        if (mTodoAdapter == null) {
+            mTodoAdapter = new ArrayAdapter<>(this,
+                    R.layout.item, R.id.title_item, itemsList);
+            mItemsListView.setAdapter(mTodoAdapter);
+        } else {
+            mTodoAdapter.clear();
+            mTodoAdapter.addAll(itemsList);
+            mTodoAdapter.notifyDataSetChanged();
+        }
+        cursor.close();
+        db.close();
+    }
+
+    //объект для работы с базой данных
+    private DataBaseHelper mDbHelper;
+
+    private ArrayAdapter<String> mTodoAdapter;
+    //объекты для работы с интерфейсом
+    private ListView mItemsListView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activiti_main);
+
+        mDbHelper = new DataBaseHelper(this);
+        mItemsListView = (ListView) findViewById(R.id.list_todo);
+
+        updateUI();
+    }
+
+    // Это метод для удаления заметки
+    // он вызывается, когда пользователь нажимает на кнопку 'Сделано'
+    public void deleteItem(View view) {
+        View parent = (View) view.getParent();
+        TextView itemTextView = (TextView) parent.findViewById(R.id.title_item);
+        String item = String.valueOf(itemTextView.getText());
+
+        //удаляемзаметку по тексту в TextView
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        db.delete(DBContract.TodoEntry.TABLE,
+                DBContract.TodoEntry.COL_TITLE + " = ?",
+                new String[]{item});
+        db.close();
+        //обновляем адаптер, отвечающий
+        //за отображение заметок в интерфейсе
+        updateUI();
     }
 }

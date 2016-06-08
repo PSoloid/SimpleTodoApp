@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SimpleTodoApp</string>
+    <string name="todoItemTitle">Добавить заметку</string>
+    <string name="deleteItemTitle">Сделано</string>
 </resources>
