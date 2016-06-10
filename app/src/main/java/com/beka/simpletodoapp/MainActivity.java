@@ -1,12 +1,13 @@
 package com.beka.simpletodoapp;
 
-import android.app.AlertDialog;
+
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,10 +24,22 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //объект для работы с базой данных
+    private DataBaseHelper mDbHelper;
+
+    private ArrayAdapter<String> mTodoAdapter;
+    //объекты для работы с интерфейсом
+    private ListView mItemsListView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activiti_main);
+
+        mDbHelper = new DataBaseHelper(this);
+        mItemsListView = (ListView) findViewById(R.id.list_todo);
+
+        updateUI();
     }
 
     @Override
@@ -66,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
     //Добавляем новую запись в БД
     private void insertIntoDB(String item){
-        SQLiteDatabase db = mDbHelper.getWritebleDatabase();
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(DBContract.TodoEntry.COL_TITLE, item);
@@ -78,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void updateUI(){
         //список для существующих заметок
-        List<String> itemList = new ArrayList<>();
+        List<String> itemsList = new ArrayList<>();
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor cursor = db.query(DBContract.TodoEntry.TABLE,
                 new String[]{DBContract.TodoEntry._ID,
@@ -103,23 +116,7 @@ public class MainActivity extends AppCompatActivity {
         db.close();
     }
 
-    //объект для работы с базой данных
-    private DataBaseHelper mDbHelper;
 
-    private ArrayAdapter<String> mTodoAdapter;
-    //объекты для работы с интерфейсом
-    private ListView mItemsListView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activiti_main);
-
-        mDbHelper = new DataBaseHelper(this);
-        mItemsListView = (ListView) findViewById(R.id.list_todo);
-
-        updateUI();
-    }
 
     // Это метод для удаления заметки
     // он вызывается, когда пользователь нажимает на кнопку 'Сделано'
